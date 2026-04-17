@@ -143,9 +143,7 @@
     button:active { transform: translateY(0); }
 
     .primary { background: linear-gradient(135deg, var(--azul), #1173cc); color: #fff; }
-    .secondary { background: #eef5fd; color: var(--azul-escuro); border: 1px solid #cfe0f3; }
     .success { background: linear-gradient(135deg, #0f9d58, #19b264); color: #fff; }
-    .neutral { background: #f6f8fb; color: #31475f; border: 1px solid #d5dfeb; }
 
     .status {
       margin-top: 14px;
@@ -288,7 +286,7 @@
 <body>
   <div class="topbar">
     <h1>📩 Disparo de E-mails em Massa • UniCesumar Caucaia</h1>
-    <p>Modelo padronizado com logo no topo e botão de suporte no fim. Você escreve a mensagem, visualiza e prepara o envio em lote.</p>
+    <p>Modelo padronizado com logo no topo e botão de suporte no fim. Você escreve a mensagem, visualiza e envia em lote.</p>
   </div>
 
   <div class="wrap">
@@ -310,7 +308,8 @@
           </div>
           <div class="field">
             <label for="nomeRemetente">Assinatura</label>
-            <input id="nomeRemetente" type="text" value="Fabricio Benigno - Tutor de Polo&#10;UniCesumar – Caucaia" />
+            <textarea id="nomeRemetente" style="min-height: 90px;">Fabricio Benigno - Tutor de Polo
+UniCesumar – Caucaia</textarea>
           </div>
         </div>
 
@@ -335,13 +334,12 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
 
         <div class="field">
           <label for="endpoint">URL do Google Apps Script / Webhook de envio</label>
-          <input id="endpoint" type="url" value="https://script.google.com/macros/s/AKfycbwRUDvUcpmghyKAlu_iJ2L54ulotYq4NnZTC0biAyKnGcJ7WF_3fNP1P3cfo8jaA54TIg/exec" placeholder="Cole aqui a URL do seu Apps Script para envio real em massa" />
+          <input id="endpoint" type="url" value="https://script.google.com/macros/s/AKfycbwRUDvUcpmghyKAlu_iJ2L54ulotYq4NnZTC0biAyKnGcJ7WF_3fNP1P3cfo8jaA54TIg/exec" />
           <div class="hint">A URL de envio já está configurada. Você pode alterar depois, se quiser, mas o sistema já fica pronto para uso.</div>
         </div>
 
         <div class="toolbar">
           <button class="primary" id="btnPreview">Atualizar prévia</button>
-
           <button class="success" id="btnEnviar">Enviar em massa</button>
         </div>
 
@@ -353,7 +351,7 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
           2. Cole os e-mails dos alunos.<br>
           3. Visualize à direita.<br>
           4. Para envio real em massa, basta manter a URL do Google Apps Script configurada.<br>
-          5. O layout sempre sairá com a logo <strong>unicesumar</strong> no topo e o botão <strong>botaosuporte</strong> no final.
+          5. O layout sempre sairá com a logo <strong>unicesumar.png</strong> no topo e o botão <strong>botaosuporte.png</strong> no final.
         </div>
       </div>
     </section>
@@ -376,26 +374,26 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
     const BUTTON_SRC = "botaosuporte.png";
     const WHATSAPP_LINK = "https://wa.me/5585985018590?text=Prezados,%20sou%20acad%C3%AAmico(a)%20do%20polo%20UniCesumar%20de%20Caucaia%20e%20gostaria%20de%20receber%20orienta%C3%A7%C3%B5es%20referentes%20%C3%A0%20minha%20situa%C3%A7%C3%A3o%20financeira.%20Poderiam%20me%20auxiliar,%20por%20gentileza%3F";
 
-    const destinatariosEl = document.getElementById('destinatarios');
-    const assuntoEl = document.getElementById('assunto');
-    const nomeRemetenteEl = document.getElementById('nomeRemetente');
-    const mensagemEl = document.getElementById('mensagem');
-    const endpointEl = document.getElementById('endpoint');
-    const previewContainer = document.getElementById('previewContainer');
-    const contador = document.getElementById('contador');
-    const statusEl = document.getElementById('status');
+    const destinatariosEl = document.getElementById("destinatarios");
+    const assuntoEl = document.getElementById("assunto");
+    const nomeRemetenteEl = document.getElementById("nomeRemetente");
+    const mensagemEl = document.getElementById("mensagem");
+    const endpointEl = document.getElementById("endpoint");
+    const previewContainer = document.getElementById("previewContainer");
+    const contador = document.getElementById("contador");
+    const statusEl = document.getElementById("status");
 
     function escapeHtml(str) {
       return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
     function getRecipients() {
-      const raw = destinatariosEl.value || '';
+      const raw = destinatariosEl.value || "";
       const emails = raw
         .split(/[\n,;\s]+/)
         .map(v => v.trim())
@@ -403,10 +401,15 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
       return [...new Set(emails)];
     }
 
-    function buildMessageHtml() {
-      const assunto = escapeHtml(assuntoEl.value.trim() || 'Sem assunto');
-      const assinatura = escapeHtml(nomeRemetenteEl.value.trim() || 'Fabricio Benigno - Tutor de Polo\nUniCesumar – Caucaia').replace(/\n/g, '<br>');
-      const body = escapeHtml(mensagemEl.value.trim()).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+    function buildMessageInnerHtml() {
+      const assunto = escapeHtml(assuntoEl.value.trim() || "Sem assunto");
+      const assinatura = escapeHtml(
+        nomeRemetenteEl.value.trim() || "Fabricio Benigno - Tutor de Polo\nUniCesumar – Caucaia"
+      ).replace(/\n/g, "<br>");
+
+      const body = escapeHtml(mensagemEl.value.trim())
+        .replace(/\n\n/g, "</p><p>")
+        .replace(/\n/g, "<br>");
 
       return `
         <img class="mail-logo" src="${LOGO_SRC}" alt="UniCesumar" />
@@ -422,14 +425,25 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
       `;
     }
 
-    function buildEmailDocument() {
-      const inner = buildMessageHtml();
+    function buildEmailDocumentForSending() {
+      const assunto = escapeHtml(assuntoEl.value.trim() || "E-mail");
+      const assinatura = escapeHtml(
+        nomeRemetenteEl.value.trim() || "Fabricio Benigno - Tutor de Polo\nUniCesumar – Caucaia"
+      ).replace(/\n/g, "<br>");
+
+      const body = escapeHtml(mensagemEl.value.trim())
+        .replace(/\n\n/g, "</p><p>")
+        .replace(/\n/g, "<br>");
+
+      const LOGO_PUBLIC_URL = "https://via.placeholder.com/320x90.png?text=Unicesumar";
+      const BUTTON_PUBLIC_URL = "https://via.placeholder.com/520x90.png?text=Falar+com+a+Tutoria+pelo+WhatsApp";
+
       return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${escapeHtml(assuntoEl.value.trim() || 'E-mail')}</title>
+<title>${assunto}</title>
 </head>
 <body style="margin:0;padding:24px;background:#edf2f7;font-family:Arial,Helvetica,sans-serif;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#edf2f7;">
@@ -438,7 +452,24 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="760" style="max-width:760px;width:100%;background:#ffffff;border:1px solid #d9e4f0;border-radius:18px;overflow:hidden;">
           <tr>
             <td style="padding:34px 44px 40px;">
-              ${inner}
+              <img src="${LOGO_PUBLIC_URL}" alt="UniCesumar" style="display:block;max-width:320px;width:100%;height:auto;margin:0 auto 30px;" />
+              <div style="font-size:15px;color:#526579;margin-bottom:24px;padding:12px 14px;background:#f6f9fc;border:1px solid #dbe7f3;border-radius:12px;">
+                <strong>Assunto:</strong> ${assunto}
+              </div>
+              <div style="font-size:17px;line-height:1.8;color:#273647;">
+                <p>${body}</p>
+              </div>
+              <div style="margin-top:30px;padding-top:16px;border-top:1px solid #e5edf5;color:#2f465f;">
+                <strong>Atenciosamente,</strong><br>${assinatura}
+              </div>
+              <div style="margin-top:28px;text-align:center;">
+                <a href="${WHATSAPP_LINK}" target="_blank">
+                  <img src="${BUTTON_PUBLIC_URL}" alt="Falar com a Tutoria pelo WhatsApp" style="max-width:100%;width:520px;height:auto;border:0;display:inline-block;" />
+                </a>
+              </div>
+              <div style="margin-top:28px;font-size:13px;color:#60758d;text-align:center;">
+                Canal oficial de suporte • Polo UniCesumar – Caucaia
+              </div>
             </td>
           </tr>
         </table>
@@ -450,67 +481,71 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
     }
 
     function updatePreview() {
-      previewContainer.innerHTML = buildMessageHtml();
+      previewContainer.innerHTML = buildMessageInnerHtml();
       const total = getRecipients().length;
-      contador.textContent = `${total} destinatário${total === 1 ? '' : 's'}`;
+      contador.textContent = `${total} destinatário${total === 1 ? "" : "s"}`;
     }
 
-    function showStatus(message, type = 'info') {
+    function showStatus(message, type = "info") {
       statusEl.className = `status show ${type}`;
       statusEl.textContent = message;
     }
 
-    document.getElementById('btnPreview').addEventListener('click', () => {
+    document.getElementById("btnPreview").addEventListener("click", () => {
       updatePreview();
-      showStatus('Prévia atualizada com sucesso. ✨', 'ok');
+      showStatus("Prévia atualizada com sucesso. ✨", "ok");
     });
 
-
-    document.getElementById('btnEnviar').addEventListener('click', async () => {
+    document.getElementById("btnEnviar").addEventListener("click", async () => {
       const endpoint = endpointEl.value.trim();
       const recipients = getRecipients();
       const subject = assuntoEl.value.trim();
-      const html = buildEmailDocument();
-      const plainText = mensagemEl.value.trim() + '\n\nAtenciosamente,\n' + (nomeRemetenteEl.value.trim() || 'Fabricio Benigno - Tutor de Polo\nUniCesumar – Caucaia');
+      const html = buildEmailDocumentForSending();
+      const plainText = mensagemEl.value.trim() + "\n\nAtenciosamente,\n" + (nomeRemetenteEl.value.trim() || "Fabricio Benigno - Tutor de Polo\nUniCesumar – Caucaia");
 
       if (!recipients.length) {
-        showStatus('Cole pelo menos um e-mail de destinatário antes de enviar.', 'error');
+        showStatus("Cole pelo menos um e-mail de destinatário antes de enviar.", "error");
         return;
       }
 
       if (!endpoint) {
-        showStatus('Informe a URL do seu Google Apps Script/Webhook. Sem ela, o sistema apenas gera o modelo, mas não dispara os e-mails.', 'error');
+        showStatus("Informe a URL do Google Apps Script.", "error");
         return;
       }
 
       try {
-        showStatus('Enviando campanha em massa... aguarde. 🚀', 'info');
+        showStatus("Enviando campanha em massa... aguarde. 🚀", "info");
+
+        const payload = {
+          recipients,
+          subject,
+          html,
+          plainText,
+          whatsappLink: WHATSAPP_LINK
+        };
+
         const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            recipients,
-            subject,
-            html,
-            plainText,
-            whatsappLink: WHATSAPP_LINK
-          })
+          method: "POST",
+          body: JSON.stringify(payload)
         });
 
-        if (!response.ok) {
-          throw new Error('Falha no endpoint de envio.');
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data.success === false) {
+          throw new Error(data.message || "Falha no endpoint de envio.");
         }
 
-        const data = await response.json().catch(() => ({}));
-        const enviados = typeof data.sent === 'number' ? data.sent : recipients.length;
-        showStatus(`Envio concluído. ${enviados} e-mail(s) processado(s) pelo endpoint. ✅`, 'ok');
+        const enviados = typeof data.sent === "number" ? data.sent : recipients.length;
+        const falharam = typeof data.failed === "number" ? data.failed : 0;
+
+        showStatus(`Envio concluído. ${enviados} e-mail(s) enviado(s). Falhas: ${falharam}. ✅`, "ok");
       } catch (error) {
-        showStatus('Não foi possível concluir o envio. Verifique a URL do Apps Script e se o endpoint aceita POST em JSON.', 'error');
+        showStatus(`Não foi possível concluir o envio. Detalhe: ${error.message}`, "error");
       }
     });
 
     [destinatariosEl, assuntoEl, nomeRemetenteEl, mensagemEl].forEach(el => {
-      el.addEventListener('input', updatePreview);
+      el.addEventListener("input", updatePreview);
     });
 
     updatePreview();
