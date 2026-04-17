@@ -334,7 +334,7 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
 
         <div class="field">
           <label for="endpoint">URL do Google Apps Script / Webhook de envio</label>
-          <input id="endpoint" type="url" value="https://script.google.com/macros/s/AKfycbwRUDvUcpmghyKAlu_iJ2L54ulotYq4NnZTC0biAyKnGcJ7WF_3fNP1P3cfo8jaA54TIg/exec" />
+          <input id="endpoint" type="url" value="https://script.google.com/macros/s/AKfycbxUYh7T2MpABeMNns_Dag6C1Y_4GjPdbJdAdJ8BhgbjMSsnth-wVku56w0Q-o5fqxw5/exec" />
           <div class="hint">A URL de envio já está configurada. Você pode alterar depois, se quiser, mas o sistema já fica pronto para uso.</div>
         </div>
 
@@ -435,9 +435,6 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
         .replace(/\n\n/g, "</p><p>")
         .replace(/\n/g, "<br>");
 
-      const LOGO_PUBLIC_URL = "https://via.placeholder.com/320x90.png?text=Unicesumar";
-      const BUTTON_PUBLIC_URL = "https://via.placeholder.com/520x90.png?text=Falar+com+a+Tutoria+pelo+WhatsApp";
-
       return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -452,7 +449,7 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="760" style="max-width:760px;width:100%;background:#ffffff;border:1px solid #d9e4f0;border-radius:18px;overflow:hidden;">
           <tr>
             <td style="padding:34px 44px 40px;">
-              <img src="${LOGO_PUBLIC_URL}" alt="UniCesumar" style="display:block;max-width:320px;width:100%;height:auto;margin:0 auto 30px;" />
+              <img src="cid:logoUni" alt="UniCesumar" style="display:block;max-width:320px;width:100%;height:auto;margin:0 auto 30px;" />
               <div style="font-size:15px;color:#526579;margin-bottom:24px;padding:12px 14px;background:#f6f9fc;border:1px solid #dbe7f3;border-radius:12px;">
                 <strong>Assunto:</strong> ${assunto}
               </div>
@@ -464,7 +461,7 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
               </div>
               <div style="margin-top:28px;text-align:center;">
                 <a href="${WHATSAPP_LINK}" target="_blank">
-                  <img src="${BUTTON_PUBLIC_URL}" alt="Falar com a Tutoria pelo WhatsApp" style="max-width:100%;width:520px;height:auto;border:0;display:inline-block;" />
+                  <img src="cid:botaoSuporte" alt="Falar com a Tutoria pelo WhatsApp" style="max-width:100%;width:520px;height:auto;border:0;display:inline-block;" />
                 </a>
               </div>
               <div style="margin-top:28px;font-size:13px;color:#60758d;text-align:center;">
@@ -500,7 +497,7 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
       const endpoint = endpointEl.value.trim();
       const recipients = getRecipients();
       const subject = assuntoEl.value.trim();
-      const html = buildEmailDocumentForSending();
+      const messageHtml = buildEmailDocumentForSending();
       const plainText = mensagemEl.value.trim() + "\n\nAtenciosamente,\n" + (nomeRemetenteEl.value.trim() || "Fabricio Benigno - Tutor de Polo\nUniCesumar – Caucaia");
 
       if (!recipients.length) {
@@ -519,7 +516,7 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
         const payload = {
           recipients,
           subject,
-          html,
+          messageHtml,
           plainText,
           whatsappLink: WHATSAPP_LINK
         };
