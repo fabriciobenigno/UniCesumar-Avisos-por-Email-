@@ -335,14 +335,13 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
 
         <div class="field">
           <label for="endpoint">URL do Google Apps Script / Webhook de envio</label>
-          <input id="endpoint" type="url" placeholder="Cole aqui a URL do seu Apps Script para envio real em massa" />
-          <div class="hint">Sem esse endpoint, o sistema continua útil para pré-visualizar, copiar o HTML, baixar o modelo e preparar a campanha.</div>
+          <input id="endpoint" type="url" value="https://script.google.com/macros/s/AKfycbwRUDvUcpmghyKAlu_iJ2L54ulotYq4NnZTC0biAyKnGcJ7WF_3fNP1P3cfo8jaA54TIg/exec" placeholder="Cole aqui a URL do seu Apps Script para envio real em massa" />
+          <div class="hint">A URL de envio já está configurada. Você pode alterar depois, se quiser, mas o sistema já fica pronto para uso.</div>
         </div>
 
         <div class="toolbar">
           <button class="primary" id="btnPreview">Atualizar prévia</button>
-          <button class="secondary" id="btnCopiarHtml">Copiar HTML do e-mail</button>
-          <button class="neutral" id="btnBaixar">Baixar HTML</button>
+
           <button class="success" id="btnEnviar">Enviar em massa</button>
         </div>
 
@@ -353,8 +352,8 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
           1. Escreva o assunto e a mensagem.<br>
           2. Cole os e-mails dos alunos.<br>
           3. Visualize à direita.<br>
-          4. Para envio real em massa, conecte uma URL de Google Apps Script.<br>
-          5. O layout sempre sairá com a logo <strong>unicesumar.png</strong> no topo e o botão <strong>botaosuporte.png</strong> no final.
+          4. Para envio real em massa, basta manter a URL do Google Apps Script configurada.<br>
+          5. O layout sempre sairá com a logo <strong>unicesumar</strong> no topo e o botão <strong>botaosuporte</strong> no final.
         </div>
       </div>
     </section>
@@ -466,25 +465,6 @@ Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu 
       showStatus('Prévia atualizada com sucesso. ✨', 'ok');
     });
 
-    document.getElementById('btnCopiarHtml').addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(buildEmailDocument());
-        showStatus('HTML do e-mail copiado. Agora você pode colar em plataforma compatível ou usar no Apps Script. 📋', 'ok');
-      } catch (err) {
-        showStatus('Não foi possível copiar automaticamente. Tente novamente no navegador.', 'error');
-      }
-    });
-
-    document.getElementById('btnBaixar').addEventListener('click', () => {
-      const blob = new Blob([buildEmailDocument()], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'modelo-email-unicesumar.html';
-      a.click();
-      URL.revokeObjectURL(url);
-      showStatus('Arquivo HTML baixado com sucesso. 💾', 'ok');
-    });
 
     document.getElementById('btnEnviar').addEventListener('click', async () => {
       const endpoint = endpointEl.value.trim();
