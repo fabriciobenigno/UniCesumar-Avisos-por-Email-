@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disparo de E-mails - UniCesumar Caucaia</title>
+  <style>
+    :root {
+      --azul: #0b5ea8;
+      --azul-escuro: #0a3f72;
+      --cinza: #f4f7fb;
+      --texto: #1f2937;
+      --borda: #d7e1ee;
+      --sucesso: #0f9d58;
+      --perigo: #c62828;
+      --sombra: 0 18px 50px rgba(11, 94, 168, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #edf4fb 0%, #f9fbfe 50%, #eef6ff 100%);
+      color: var(--texto);
+    }
+
+    .topbar {
+      background: linear-gradient(135deg, var(--azul-escuro), var(--azul));
+      color: #fff;
+      padding: 22px 28px;
+      box-shadow: var(--sombra);
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .topbar p {
+      margin: 8px 0 0;
+      opacity: 0.94;
+      font-size: 15px;
+    }
+
+    .wrap {
+      width: min(1500px, calc(100% - 32px));
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: 480px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel, .preview-card {
+      background: #fff;
+      border: 1px solid var(--borda);
+      border-radius: 22px;
+      box-shadow: var(--sombra);
+      overflow: hidden;
+    }
+
+    .panel-head, .preview-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--borda);
+      background: #fbfdff;
+    }
+
+    .panel-head h2, .preview-head h2 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--azul-escuro);
+    }
+
+    .panel-body {
+      padding: 20px 22px 24px;
+    }
+
+    .field { margin-bottom: 16px; }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 7px;
+      color: #214b75;
+    }
+
+    input[type="text"], input[type="url"], textarea {
+      width: 100%;
+      border: 1px solid #c9d8ea;
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 15px;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--texto);
+      outline: none;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--azul);
+      box-shadow: 0 0 0 4px rgba(11, 94, 168, 0.12);
+    }
+
+    textarea { resize: vertical; min-height: 110px; }
+    #mensagem { min-height: 300px; }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .hint {
+      margin-top: 7px;
+      font-size: 12px;
+      color: #60758d;
+      line-height: 1.45;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .12s ease, opacity .2s ease, box-shadow .2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    .primary { background: linear-gradient(135deg, var(--azul), #1173cc); color: #fff; }
+    .secondary { background: #eef5fd; color: var(--azul-escuro); border: 1px solid #cfe0f3; }
+    .success { background: linear-gradient(135deg, #0f9d58, #19b264); color: #fff; }
+    .neutral { background: #f6f8fb; color: #31475f; border: 1px solid #d5dfeb; }
+
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      display: none;
+      line-height: 1.45;
+    }
+
+    .status.show { display: block; }
+    .status.ok { background: #eaf8f0; color: #16653a; border: 1px solid #bfe7cc; }
+    .status.error { background: #fff0f0; color: #9c1c1c; border: 1px solid #f0c1c1; }
+    .status.info { background: #eef6ff; color: #14476f; border: 1px solid #cfe0f3; }
+
+    .preview-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: #eef5fd;
+      color: var(--azul-escuro);
+      border: 1px solid #cfe0f3;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .mail-shell {
+      background: #edf2f7;
+      padding: 28px;
+      min-height: 900px;
+    }
+
+    .mail-card {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid #d9e4f0;
+      box-shadow: 0 16px 40px rgba(15, 46, 85, 0.12);
+    }
+
+    .mail-content {
+      padding: 34px 44px 40px;
+    }
+
+    .mail-logo {
+      display: block;
+      max-width: 320px;
+      width: 100%;
+      height: auto;
+      margin: 0 auto 30px;
+    }
+
+    .subject-line {
+      font-size: 15px;
+      color: #526579;
+      margin-bottom: 24px;
+      padding: 12px 14px;
+      background: #f6f9fc;
+      border: 1px solid #dbe7f3;
+      border-radius: 12px;
+    }
+
+    .mail-body {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #273647;
+      white-space: pre-wrap;
+    }
+
+    .mail-body p {
+      margin: 0 0 18px;
+    }
+
+    .signature {
+      margin-top: 30px;
+      padding-top: 16px;
+      border-top: 1px solid #e5edf5;
+      color: #2f465f;
+      white-space: pre-wrap;
+    }
+
+    .cta-wrap {
+      margin-top: 28px;
+      text-align: center;
+    }
+
+    .cta-link { display: inline-block; }
+
+    .cta-img {
+      max-width: 100%;
+      width: 520px;
+      height: auto;
+      border: 0;
+      display: inline-block;
+    }
+
+    .footer-note {
+      margin-top: 28px;
+      font-size: 13px;
+      color: #60758d;
+      text-align: center;
+    }
+
+    .muted-box {
+      margin-top: 16px;
+      background: #f8fbff;
+      border: 1px dashed #cfe0f3;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #56708b;
+    }
+
+    @media (max-width: 1100px) {
+      .wrap { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .topbar { padding: 20px; }
+      .topbar h1 { font-size: 24px; }
+      .wrap { width: min(100% - 16px, 1500px); margin: 16px auto; gap: 16px; }
+      .panel-body, .panel-head, .preview-head { padding-left: 16px; padding-right: 16px; }
+      .mail-shell { padding: 12px; }
+      .mail-content { padding: 22px 18px 28px; }
+      .toolbar, .row { grid-template-columns: 1fr; }
+      .mail-body { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>📩 Disparo de E-mails em Massa • UniCesumar Caucaia</h1>
+    <p>Modelo padronizado com logo no topo e botão de suporte no fim. Você escreve a mensagem, visualiza e prepara o envio em lote.</p>
+  </div>
+
+  <div class="wrap">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Configuração da mensagem</h2>
+      </div>
+      <div class="panel-body">
+        <div class="field">
+          <label for="destinatarios">Destinatários</label>
+          <textarea id="destinatarios" placeholder="Cole aqui vários e-mails, separados por vírgula, ponto e vírgula, espaço ou quebra de linha."></textarea>
+          <div class="hint">Exemplo: aluno1@email.com, aluno2@email.com ou um por linha.</div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="assunto">Assunto</label>
+            <input id="assunto" type="text" value="Regularização de Pendência Financeira – Orientações Importantes" />
+          </div>
+          <div class="field">
+            <label for="nomeRemetente">Assinatura</label>
+            <input id="nomeRemetente" type="text" value="Fabricio Benigno - Tutor de Polo&#10;UniCesumar – Caucaia" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="mensagem">Mensagem</label>
+          <textarea id="mensagem">Prezada(o) acadêmica(o),
+
+Esperamos que esta mensagem a(o) encontre bem.
+
+Identificamos, em nosso sistema, a existência de pendência(s) financeira(s) referente(s) à(s) mensalidade(s) de seu curso junto à instituição. Compreendemos que, em muitos casos, essa situação pode decorrer de fatores diversos, tais como dúvidas quanto à utilização do ambiente acadêmico Studeo, desconhecimento dos procedimentos de pagamento, prazos ou outras questões administrativas.
+
+Diante disso, colocamo-nos inteiramente à disposição para prestar os devidos esclarecimentos e orientações necessárias, a fim de auxiliá-la(o) na regularização de sua situação acadêmica e financeira, evitando possíveis transtornos, como restrições de acesso ao sistema ou prejuízos em seu processo formativo.
+
+Reforçamos que a regularização pode ser realizada de forma simples, e nossa equipe está preparada para orientá-la(o) em todas as etapas, inclusive no acesso ao Studeo, emissão de boletos, verificação de datas de vencimento e demais procedimentos pertinentes.
+
+Caso já tenha efetuado o pagamento, solicitamos, por gentileza, que desconsidere esta mensagem.
+
+Para atendimento e suporte, pedimos que entre em contato conosco por meio de nossos canais oficiais.
+
+Certos de sua compreensão, reiteramos nosso compromisso com a qualidade de seu percurso acadêmico e permanecemos à disposição.</textarea>
+        </div>
+
+        <div class="field">
+          <label for="endpoint">URL do Google Apps Script / Webhook de envio</label>
+          <input id="endpoint" type="url" placeholder="Cole aqui a URL do seu Apps Script para envio real em massa" />
+          <div class="hint">Sem esse endpoint, o sistema continua útil para pré-visualizar, copiar o HTML, baixar o modelo e preparar a campanha.</div>
+        </div>
+
+        <div class="toolbar">
+          <button class="primary" id="btnPreview">Atualizar prévia</button>
+          <button class="secondary" id="btnCopiarHtml">Copiar HTML do e-mail</button>
+          <button class="neutral" id="btnBaixar">Baixar HTML</button>
+          <button class="success" id="btnEnviar">Enviar em massa</button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div class="muted-box">
+          <strong>Como usar:</strong><br>
+          1. Escreva o assunto e a mensagem.<br>
+          2. Cole os e-mails dos alunos.<br>
+          3. Visualize à direita.<br>
+          4. Para envio real em massa, conecte uma URL de Google Apps Script.<br>
+          5. O layout sempre sairá com a logo <strong>unicesumar.png</strong> no topo e o botão <strong>botaosuporte.png</strong> no final.
+        </div>
+      </div>
+    </section>
+
+    <section class="preview-card">
+      <div class="preview-head">
+        <h2>Prévia do e-mail</h2>
+        <div class="chip" id="contador">0 destinatários</div>
+      </div>
+      <div class="mail-shell">
+        <div class="mail-card">
+          <div class="mail-content" id="previewContainer"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const LOGO_SRC = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABgAAAAESCAYAAAA7Vx51AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAgAElEQVR4nOzdeZBld13v/89wm4QEVlkU1wUhIYJgY4IIrhFQQQJ4x2R2TZ7d2j27n1uZ6f5N1XdXV/1nfrunq6r3vVZ1d3d2mYvV2dmtfWJ0m7nE2Z0hQIBIaKEiQxGQJJFDgRkU2e8/fH4Jx4zj3nPOc8z3nveT7v9Xq9Xq/X6/V6vV6v19f8F3s9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg3xQ2a4vW5P8z1e7x9+fO3zq2c2fPnKqurj6+fPly9fLly8+fP39+fn7+8ePHr6+vX79+8+bNq6urv/76a6/X6/X6/X6/30W8+0m7a5vN9e3d+9++fPny5cvXq1evX79+/fv37+9fX19fX1+v1+v1+v1+v1+q+g2dZ9v9fT09Pf39/f39+fn5+f39/f39/f39/v7+/v7+/v7+/v7+/v7+/v7+9nWb8Qm8kV9dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dV9zQx6u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7v7Yw1i8uXLl8+fP39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/Pz8zv7WQe7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7s7GQfPnz5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+f3P7c0wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC4r/wB1X7v/6j4lBIAAAAASUVORK5CYII=";
+    const BUTTON_SRC = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAACAAAAAVVCAYAAACPMyu0AAAQAElEQVR4AezdzW9kWZYY9hflGQ80+oCmG5uJBEKS4iFhBBRgSgQkK5QO6mK7m7M7v9v/4zvM9mY0mW7s1m+Wz2r7d4v6Wm7vQb2r8z0cK2bJf0+fPnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr06dOnT58+ffr0/AcAAP//AwA2s3Ly3VJzNQAAAABJRU5ErkJggg==";
+    const WHATSAPP_LINK = "https://wa.me/5585985018590?text=Prezados,%20sou%20acad%C3%AAmico(a)%20do%20polo%20UniCesumar%20de%20Caucaia%20e%20gostaria%20de%20receber%20orienta%C3%A7%C3%B5es%20referentes%20%C3%A0%20minha%20situa%C3%A7%C3%A3o%20financeira.%20Poderiam%20me%20auxiliar,%20por%20gentileza%3F";
+
+    const destinatariosEl = document.getElementById('destinatarios');
+    const assuntoEl = document.getElementById('assunto');
+    const nomeRemetenteEl = document.getElementById('nomeRemetente');
+    const mensagemEl = document.getElementById('mensagem');
+    const endpointEl = document.getElementById('endpoint');
+    const previewContainer = document.getElementById('previewContainer');
+    const contador = document.getElementById('contador');
+    const statusEl = document.getElementById('status');
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getRecipients() {
+      const raw = destinatariosEl.value || '';
+      const emails = raw
+        .split(/[\n,;\s]+/)
+        .map(v => v.trim())
+        .filter(Boolean);
+      return [...new Set(emails)];
+    }
+
+    function buildMessageHtml() {
+      const assunto = escapeHtml(assuntoEl.value.trim() || 'Sem assunto');
+      const assinatura = escapeHtml(nomeRemetenteEl.value.trim() || 'Fabricio Benigno - Tutor de Polo\nUniCesumar – Caucaia').replace(/\n/g, '<br>');
+      const body = escapeHtml(mensagemEl.value.trim()).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+
+      return `
+        <img class="mail-logo" src="${LOGO_SRC}" alt="UniCesumar" />
+        <div class="subject-line"><strong>Assunto:</strong> ${assunto}</div>
+        <div class="mail-body"><p>${body}</p></div>
+        <div class="signature"><strong>Atenciosamente,</strong><br>${assinatura}</div>
+        <div class="cta-wrap">
+          <a class="cta-link" href="${WHATSAPP_LINK}" target="_blank" rel="noopener noreferrer">
+            <img class="cta-img" src="${BUTTON_SRC}" alt="Falar com a Tutoria pelo WhatsApp" />
+          </a>
+        </div>
+        <div class="footer-note">Canal oficial de suporte • Polo UniCesumar – Caucaia</div>
+      `;
+    }
+
+    function buildEmailDocument() {
+      const inner = buildMessageHtml();
+      return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(assuntoEl.value.trim() || 'E-mail')}</title>
+</head>
+<body style="margin:0;padding:24px;background:#edf2f7;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#edf2f7;">
+    <tr>
+      <td align="center">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="760" style="max-width:760px;width:100%;background:#ffffff;border:1px solid #d9e4f0;border-radius:18px;overflow:hidden;">
+          <tr>
+            <td style="padding:34px 44px 40px;">
+              ${inner}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+    }
+
+    function updatePreview() {
+      previewContainer.innerHTML = buildMessageHtml();
+      const total = getRecipients().length;
+      contador.textContent = `${total} destinatário${total === 1 ? '' : 's'}`;
+    }
+
+    function showStatus(message, type = 'info') {
+      statusEl.className = `status show ${type}`;
+      statusEl.textContent = message;
+    }
+
+    document.getElementById('btnPreview').addEventListener('click', () => {
+      updatePreview();
+      showStatus('Prévia atualizada com sucesso. ✨', 'ok');
+    });
+
+    document.getElementById('btnCopiarHtml').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(buildEmailDocument());
+        showStatus('HTML do e-mail copiado. Agora você pode colar em plataforma compatível ou usar no Apps Script. 📋', 'ok');
+      } catch (err) {
+        showStatus('Não foi possível copiar automaticamente. Tente novamente no navegador.', 'error');
+      }
+    });
+
+    document.getElementById('btnBaixar').addEventListener('click', () => {
+      const blob = new Blob([buildEmailDocument()], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'modelo-email-unicesumar.html';
+      a.click();
+      URL.revokeObjectURL(url);
+      showStatus('Arquivo HTML baixado com sucesso. 💾', 'ok');
+    });
+
+    document.getElementById('btnEnviar').addEventListener('click', async () => {
+      const endpoint = endpointEl.value.trim();
+      const recipients = getRecipients();
+      const subject = assuntoEl.value.trim();
+      const html = buildEmailDocument();
+      const plainText = mensagemEl.value.trim() + '\n\nAtenciosamente,\n' + (nomeRemetenteEl.value.trim() || 'Fabricio Benigno - Tutor de Polo\nUniCesumar – Caucaia');
+
+      if (!recipients.length) {
+        showStatus('Cole pelo menos um e-mail de destinatário antes de enviar.', 'error');
+        return;
+      }
+
+      if (!endpoint) {
+        showStatus('Informe a URL do seu Google Apps Script/Webhook. Sem ela, o sistema apenas gera o modelo, mas não dispara os e-mails.', 'error');
+        return;
+      }
+
+      try {
+        showStatus('Enviando campanha em massa... aguarde. 🚀', 'info');
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipients,
+            subject,
+            html,
+            plainText,
+            whatsappLink: WHATSAPP_LINK
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Falha no endpoint de envio.');
+        }
+
+        const data = await response.json().catch(() => ({}));
+        const enviados = typeof data.sent === 'number' ? data.sent : recipients.length;
+        showStatus(`Envio concluído. ${enviados} e-mail(s) processado(s) pelo endpoint. ✅`, 'ok');
+      } catch (error) {
+        showStatus('Não foi possível concluir o envio. Verifique a URL do Apps Script e se o endpoint aceita POST em JSON.', 'error');
+      }
+    });
+
+    [destinatariosEl, assuntoEl, nomeRemetenteEl, mensagemEl].forEach(el => {
+      el.addEventListener('input', updatePreview);
+    });
+
+    updatePreview();
+  </script>
+</body>
+</html>
